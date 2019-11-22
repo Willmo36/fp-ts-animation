@@ -1,3 +1,12 @@
+export const URI = "Animation_";
+export type URI = typeof URI
+
+declare module "fp-ts/lib/HKT" {
+  interface URItoKind<A> {
+    Animation_: Animation<A>
+  }
+}
+
 export type Animation<A> =
   | {
       readonly type: "Runnable";

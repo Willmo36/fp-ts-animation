@@ -5,6 +5,7 @@
   "author": "Max Willmott <max.willmott@skipthedishes.ca>",
   "license": "MIT",
   "dependencies": {
+    "@types/node": "^12.12.11",
     "fp-ts": "^2.1.2"
   },
   "scripts": {

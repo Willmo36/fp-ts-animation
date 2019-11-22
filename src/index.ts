@@ -1,7 +1,6 @@
-import * as IO from "fp-ts/lib/IO";
-import { Monoid } from "fp-ts/lib/Monoid";
+
 import { Semiring } from "fp-ts/lib/Semiring";
-import { pipe } from "fp-ts/lib/pipeable";
+import { pipe, pipeable } from "fp-ts/lib/pipeable";
 
 //https://bkase.github.io/slides/algebra-driven-design/#/58
 //https://github.com/bkase/swift-fp-animations/blob/master/Sources/AnimationsCore/Animations.swift
@@ -32,6 +31,8 @@ https://docs.google.com/spreadsheets/d/1PwZPOd5Bm4HbBhETj-56S3CEIRJJjHO7naMTRX7K
 
 import * as A from "./Animation";
 import { Semigroup } from "fp-ts/lib/Semigroup";
+import {  Functor1 } from "fp-ts/lib/Functor";
+
 type Animation<A> = A.Animation<A>;
 
 const getAdd = <A>(sg: Semigroup<A>) => (
@@ -61,12 +62,20 @@ const getAdd = <A>(sg: Semigroup<A>) => (
       () =>
         pipe(
           y,
-          A.fold(() => y, () => A.trivial, () => A.trivial)
+          A.fold(
+            () => y,
+            () => A.trivial,
+            () => A.trivial
+          )
         ),
       () =>
         pipe(
           y,
-          A.fold(() => y, () => A.trivial, () => A.cancelled)
+          A.fold(
+            () => y,
+            () => A.trivial,
+            () => A.cancelled
+          )
         )
     )
   );
@@ -83,11 +92,12 @@ const mult = <A>(x: Animation<A>, y: Animation<A>): Animation<A> =>
             (yDur, yVal) => {
               const dur = xDur + yDur;
               const ratio = xDur / dur;
+              const xMax= dur * ratio;
               const val = (t: number) => {
-                if (t <= ratio && xDur !== 0) {
+                if (t <= xDur && xDur !== 0) {
                   return xVal(t / ratio);
                 } else {
-                  return yVal((t - ratio) / (1 - ratio));
+                  return yVal(t - xDur);
                 }
               };
 
@@ -102,12 +112,26 @@ const mult = <A>(x: Animation<A>, y: Animation<A>): Animation<A> =>
     )
   );
 
-const getSemiringAnimation = <A>(sg: Semigroup<A>): Semiring<Animation<A>> => ({
+export const getSemiringAnimation = <A>(
+  sg: Semigroup<A>
+): Semiring<Animation<A>> => ({
   zero: A.cancelled,
   one: A.trivial,
   add: getAdd(sg),
   mul: mult
 });
 
-//todo functor
-//todo "driver" --- https://github.com/bkase/swift-fp-animations/blob/master/Sources/AnimationsCore/Driver.swift
+export const functorAnimation: Functor1<A.URI> = {
+  URI: A.URI,
+  map: (fa, f) =>
+    pipe(
+      fa,
+      A.fold(
+        (dur, tick) => A.runnable(dur, n => f(tick(n))),
+        () => A.trivial,
+        () => A.cancelled
+      )
+    )
+};
+
+export const {map} = pipeable(functorAnimation);
