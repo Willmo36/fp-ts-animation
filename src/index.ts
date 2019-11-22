@@ -1,6 +1,7 @@
 import * as IO from "fp-ts/lib/IO";
 import {Monoid} from "fp-ts/lib/Monoid";
 import { Semiring } from "fp-ts/lib/Semiring";
+import {pipe} from "fp-ts/lib/pipeable";
 
 
 //https://bkase.github.io/slides/algebra-driven-design/#/58
@@ -25,32 +26,67 @@ import { Semiring } from "fp-ts/lib/Semiring";
  * Potential idea - instead of just emitting an interval perhaps have it as a percentage of the initial duration
  * How would this work with a bezier curve though? Where does above 100% before the end? hmmm
  * I guess it'll be another constructor for Animation (Linear | Tween | Bezier Curve)
+ * 
+ * 
+ *  0 = cancelled
+ *  1 = trivial
+ *  n = runnable
+ * 
+ *  under addition
+ *  0 + 0 = 0
+ *  0 + 1 = 1 associative
+ *  1 + 0 = 1
+ *  n + 0 = n
+ *  n + 1 = n + 1
+ *  
  */
 
-type Animation<A> = 
-  | {tag: 'runnable', duration: number, value: (progress: number ) => A}
-  | {tag: 'cancelled'}
-  | {tag: 'trivial'}
 
-const animation = <A>(duration: number, value: (p: number) => A): Animation<A> => ({tag: "runnable", duration, value});
-const cancelled: Animation<unknown> = {tag: 'cancelled'}
-const trivial: Animation<unknown> = {tag: 'trivial'}
+import  * as A from "./Animation";
+import { Semigroup } from "fp-ts/lib/Semigroup";
+type Animation<A> = A.Animation<A>;
 
-const fold = <A, B>(c1: (duration: number, value: (n: number) => A) => B, c2: () => B, c3: () => B) => (animation: Animation<A>) => {
-  switch (animation.tag){
-    case "runnable":
-       return c1(animation.duration,animation.value);
-    case "cancelled":
-      return c2();
-    case ""
-  }
-}
-
+const getAdd = <A>(sg: Semigroup<A>) => (x: Animation<A>, y: Animation<A>): Animation<A> =>
+  pipe(
+    x,
+    A.fold(
+      (xDur, xVal) => 
+        pipe(
+          y,
+          A.fold((yDur, yVal) => {
+             const dur = Math.max(xDur, yDur);
+             const val = (dur: number) => {
+               const x1 = xVal(dur);
+               const y1 = yVal(dur);
+               return sg.concat(x1, y1);
+             }
+             return A.runnable(dur, val);
+            },
+            () => x,
+            () => x
+          )
+        ),
+        () => pipe(y,
+            A.fold(
+              () => y,
+              () => A.trivial,
+              () => A.trivial
+            )
+          ),
+        () => pipe(y,
+          A.fold(
+            () => y,
+            () => A.trivial,
+            () => A.cancelled
+          )
+        )
+    )
+  )
 
 const getSemiringAnimation = <A>(): Semiring<Animation<A>> => ({
-  zero: cancelled,
-  one: trivial,
-  add: (a,b) => ({dur: Math.max(a.dur, b.dur)}), //same time
+  zero: A.cancelled,
+  one: A.trivial,
+  add: (
   mul: (a, b) => ({dur: a.dur + b.dur})         //one after the other
 })
 

@@ -2,7 +2,7 @@ export type Animation<A> =
   | {
       readonly type: "Runnable";
       readonly value0: number;
-      readonly value1: A;
+      readonly value1: (number: number) => A;
     }
   | {
       readonly type: "Trivial";
@@ -11,7 +11,10 @@ export type Animation<A> =
       readonly type: "Cancelled";
     };
 
-export function runnable<A>(value0: number, value1: A): Animation<A> {
+export function runnable<A>(
+  value0: number,
+  value1: (number: number) => A
+): Animation<A> {
   return { type: "Runnable", value0, value1 };
 }
 
@@ -20,7 +23,7 @@ export const trivial: Animation<never> = { type: "Trivial" };
 export const cancelled: Animation<never> = { type: "Cancelled" };
 
 export function fold<A, R>(
-  onRunnable: (value0: number, value1: A) => R,
+  onRunnable: (value0: number, value1: (number: number) => A) => R,
   onTrivial: () => R,
   onCancelled: () => R
 ): (fa: Animation<A>) => R {
@@ -36,7 +39,6 @@ export function fold<A, R>(
   };
 }
 
-import { Eq, fromEquals } from "fp-ts/lib/Eq";
 import { Prism } from "monocle-ts";
 
 export function _runnable<A>(): Prism<Animation<A>, Animation<A>> {
@@ -51,9 +53,11 @@ export function _cancelled<A>(): Prism<Animation<A>, Animation<A>> {
   return Prism.fromPredicate(s => s.type === "Cancelled");
 }
 
+import { Eq, fromEquals } from "fp-ts/lib/Eq";
+
 export function getEq<A>(
   eqRunnableValue0: Eq<number>,
-  eqRunnableValue1: Eq<A>
+  eqRunnableValue1: Eq<(number: number) => A>
 ): Eq<Animation<A>> {
   return fromEquals((x, y) => {
     if (x.type === "Runnable" && y.type === "Runnable") {
