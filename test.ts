@@ -12,4 +12,5 @@ const a2 = runnable(5000, n => "a2");
 const a3 = semiring.mul(a1, a2);
 const a4 = pipe(a3, map(n => console.log(n)));
 
+// linearDriver(a4, 1000);
 immediateDriver(a4, 1000);

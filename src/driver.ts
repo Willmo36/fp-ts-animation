@@ -2,7 +2,6 @@ import { Animation, fold } from "./Animation";
 import { pipe } from "fp-ts/lib/pipeable";
 import * as Array from "fp-ts/lib/Array";
 
-export type Driver = <A>(animation:Animation<A>, percision: number) => CancelDriver;
 export type CancelDriver = () => void;
 
 export function linearDriver<A>(
@@ -12,18 +11,16 @@ export function linearDriver<A>(
   const timeouts = pipe(
     animation,
     fold<A, NodeJS.Timeout[]>(
-      (dur, tick) => {
-        const rate = Math.floor(dur / percision);
-        return pipe(
-          Array.range(1, rate),
+      (dur, tick) =>
+        pipe(
+          Array.range(1, Math.floor(dur / percision)),
           Array.mapWithIndex((_, i) => i * percision),
           Array.map(part =>
             setTimeout(() => {
               tick(part);
             }, part)
           )
-        );
-      },
+        ),
       () => [],
       () => []
     )
@@ -39,7 +36,6 @@ export function linearDriver<A>(
   };
 }
 
-
 export function immediateDriver<A>(
   animation: Animation<A>,
   percision: number
@@ -47,20 +43,16 @@ export function immediateDriver<A>(
   pipe(
     animation,
     fold<A, void>(
-      (dur, tick) => {
-        const rate = Math.floor(dur / percision);
-        return pipe(
-          Array.range(1, rate),
+      (dur, tick) =>
+        pipe(
+          Array.range(1, Math.floor(dur / percision)),
           Array.mapWithIndex((_, i) => i * percision),
-          Array.map(part =>
-              tick(part)
-          )
-        );
-      },
+          Array.map(part => tick(part))
+        ),
       () => [],
       () => []
     )
-  );  
+  );
 
   return () => {};
 }
