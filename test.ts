@@ -16,4 +16,4 @@ const summed = semiring.add(a1,a2);
 const render = consoleRender("tick: ")
 
 linearDriver(pipe(summed, render), 1000);
-// immediateDriver(a4, 1000);
+// immediateDriver(pipe(summed, render), 1000);

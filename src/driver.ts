@@ -15,10 +15,11 @@ export function linearDriver<A>(
         pipe(
           Array.range(1, Math.floor(dur / percision)),
           Array.mapWithIndex((_, i) => i * percision),
-          Array.map(part =>
+          Array.map(value =>
             setTimeout(() => {
-              tick(part);
-            }, part)
+              const percentage = (dur / 100) * value;
+              return tick({ value, final: dur, percentage });
+            }, value)
           )
         ),
       () => [],
@@ -47,7 +48,10 @@ export function immediateDriver<A>(
         pipe(
           Array.range(1, Math.floor(dur / percision)),
           Array.mapWithIndex((_, i) => i * percision),
-          Array.map(part => tick(part))
+          Array.map(value => {
+            const percentage = (dur / 100) * value;
+            return tick({ value, final: dur, percentage });
+          })
         ),
       () => [],
       () => []

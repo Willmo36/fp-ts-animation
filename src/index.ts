@@ -48,9 +48,9 @@ const getAdd = <A>(sg: Semigroup<A>) => (
           A.fold(
             (yDur, yVal) => {
               const dur = Math.max(xDur, yDur);
-              const val = (dur: number) => {
-                const x1 = xVal(dur);
-                const y1 = yVal(dur);
+              const val = (prog: A.Progress) => {
+                const x1 = xVal(prog);
+                const y1 = yVal(prog);
                 return sg.concat(x1, y1);
               };
               return A.runnable(dur, val);
@@ -93,11 +93,25 @@ const mult = <A>(x: Animation<A>, y: Animation<A>): Animation<A> =>
               const dur = xDur + yDur;
               const ratio = xDur / dur;
               const xMax= dur * ratio;
-              const val = (t: number) => {
-                if (t <= xDur && xDur !== 0) {
-                  return xVal(t / ratio);
+              const val = (xyProg: A.Progress) => {
+                //divvy up the progress
+                //which "side" of the progress are we in?
+
+                if (xyProg.value <= xDur && xDur !== 0) {
+                  const xProg: A.Progress = {
+                    value: xyProg.value,
+                    final: xDur,
+                    percentage: (xDur / 100) * xyProg.value
+                   }
+                   
+                  return xVal(xProg);
                 } else {
-                  return yVal(t - xDur);
+                  const yProg: A.Progress = {
+                    value: xyProg.value,
+                    final: yDur,
+                    percentage: (yDur / 100) * xyProg.value
+                   }
+                  return yVal(yProg);
                 }
               };
 
