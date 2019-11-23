@@ -1,4 +1,3 @@
-
 import { Semiring } from "fp-ts/lib/Semiring";
 import { pipe, pipeable } from "fp-ts/lib/pipeable";
 
@@ -31,7 +30,7 @@ https://docs.google.com/spreadsheets/d/1PwZPOd5Bm4HbBhETj-56S3CEIRJJjHO7naMTRX7K
 
 import * as A from "./Animation";
 import { Semigroup } from "fp-ts/lib/Semigroup";
-import {  Functor1 } from "fp-ts/lib/Functor";
+import { Functor1 } from "fp-ts/lib/Functor";
 
 type Animation<A> = A.Animation<A>;
 
@@ -62,20 +61,12 @@ const getAdd = <A>(sg: Semigroup<A>) => (
       () =>
         pipe(
           y,
-          A.fold(
-            () => y,
-            () => A.trivial,
-            () => A.trivial
-          )
+          A.fold(() => y, () => A.trivial, () => A.trivial)
         ),
       () =>
         pipe(
           y,
-          A.fold(
-            () => y,
-            () => A.trivial,
-            () => A.cancelled
-          )
+          A.fold(() => y, () => A.trivial, () => A.cancelled)
         )
     )
   );
@@ -92,25 +83,38 @@ const mult = <A>(x: Animation<A>, y: Animation<A>): Animation<A> =>
             (yDur, yVal) => {
               const dur = xDur + yDur;
               const ratio = xDur / dur;
-              const xMax= dur * ratio;
+
               const val = (xyProg: A.Progress) => {
                 //divvy up the progress
                 //which "side" of the progress are we in?
 
+                //these are correct
+                const xRatio = xDur / xyProg.final;
+                const yRatio = 1 - xRatio;
+
                 if (xyProg.value <= xDur && xDur !== 0) {
+                  //find the ratio of xDur of xyDur
+                  //then multiple xyProg.value by that ratio
+                  //to get the percentage through xDur
+
+                  const xPercentage = xyProg.percentage * xRatio;
+
                   const xProg: A.Progress = {
                     value: xyProg.value,
                     final: xDur,
-                    percentage: (xDur / 100) * xyProg.value
-                   }
-                   
+                    // the 100 here is defo wrong, it should be the "unit" from the driver...
+                    percentage: xPercentage
+                  };
+
                   return xVal(xProg);
                 } else {
+                  const yValue = xyProg.value - xDur;
+                  const yPercentage = yValue / yDur;
                   const yProg: A.Progress = {
                     value: xyProg.value,
                     final: yDur,
-                    percentage: (yDur / 100) * xyProg.value
-                   }
+                    percentage: yPercentage
+                  };
                   return yVal(yProg);
                 }
               };
@@ -148,4 +152,4 @@ export const functorAnimation: Functor1<A.URI> = {
     )
 };
 
-export const {map} = pipeable(functorAnimation);
+export const { map } = pipeable(functorAnimation);

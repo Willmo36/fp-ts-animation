@@ -1,3 +1,5 @@
+import { identity } from "fp-ts/lib/function";
+
 export type Progress = {
   final: number;
   percentage: number;
@@ -53,3 +55,5 @@ export function fold<A, R>(
     }
   };
 }
+
+export const duration = (dur: number): Animation<Progress> => runnable(dur, identity);
