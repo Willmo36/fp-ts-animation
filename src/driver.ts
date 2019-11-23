@@ -6,18 +6,18 @@ export type CancelDriver = () => void;
 
 export function linearDriver<A>(
   animation: Animation<A>,
-  percision: number
+  unit: number
 ): CancelDriver {
   const timeouts = pipe(
     animation,
     fold<A, NodeJS.Timeout[]>(
       (dur, tick) =>
         pipe(
-          Array.range(1, Math.floor(dur / percision)),
-          Array.mapWithIndex((_, i) => i * percision),
+          Array.range(1, Math.floor(dur / unit)),
+          Array.mapWithIndex((_, i) => i * unit),
           Array.map(value =>
             setTimeout(() => {
-              const percentage = (dur / 100) * value;
+              const percentage = value / dur;
               return tick({ value, final: dur, percentage });
             }, value)
           )
@@ -39,17 +39,17 @@ export function linearDriver<A>(
 
 export function immediateDriver<A>(
   animation: Animation<A>,
-  percision: number
+  unit: number
 ): CancelDriver {
   pipe(
     animation,
     fold<A, void>(
       (dur, tick) =>
         pipe(
-          Array.range(1, Math.floor(dur / percision)),
-          Array.mapWithIndex((_, i) => i * percision),
+          Array.range(1, Math.floor(dur / unit)),
+          Array.mapWithIndex((_, i) => i * unit),
           Array.map(value => {
-            const percentage = (dur / 100) * value;
+            const percentage = value / dur;
             return tick({ value, final: dur, percentage });
           })
         ),
