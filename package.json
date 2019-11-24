@@ -1,7 +1,8 @@
 {
   "name": "fp-animation",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "author": "Max Willmott <max.willmott@skipthedishes.ca>",
   "license": "MIT",
   "dependencies": {
@@ -11,5 +12,8 @@
     "@types/jquery": "^3.3.31",
     "fp-ts-codegen": "^0.4.0",
     "ts-node": "^8.5.2"
+  },
+  "scripts": {
+    "build": "tsc"
   }
 }
