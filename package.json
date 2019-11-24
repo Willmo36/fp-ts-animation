@@ -5,16 +5,10 @@
   "author": "Max Willmott <max.willmott@skipthedishes.ca>",
   "license": "MIT",
   "dependencies": {
-    "@types/css": "^0.0.31",
-    "@types/jquery": "^3.3.31",
-    "@types/node": "^12.12.11",
-    "fp-ts": "^2.1.2",
-    "jquery": "^3.4.1"
-  },
-  "scripts": {
-    "dev": "parcel index.html"
+    "fp-ts": "^2.1.2"
   },
   "devDependencies": {
+    "@types/jquery": "^3.3.31",
     "fp-ts-codegen": "^0.4.0",
     "ts-node": "^8.5.2"
   }

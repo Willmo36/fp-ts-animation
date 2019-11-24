@@ -1,7 +1,6 @@
 import { pipe } from "fp-ts/lib/pipeable";
 import { Semigroup } from "fp-ts/lib/Semigroup";
 import * as Record from "fp-ts/lib/Record";
-import $ from "jquery";
 import { duration, Progress } from "../../src/Animation";
 import { getSemiringAnimation, map } from "../../src/index";
 import { run } from "../../src/run";
