@@ -28,7 +28,7 @@ https://docs.google.com/spreadsheets/d/1PwZPOd5Bm4HbBhETj-56S3CEIRJJjHO7naMTRX7K
  *
  */
 
-import * as A from "./Animation";
+import * as A from "./";
 import { Semigroup } from "fp-ts/lib/Semigroup";
 import { Functor1 } from "fp-ts/lib/Functor";
 import { Monoid } from "fp-ts/lib/Monoid";
