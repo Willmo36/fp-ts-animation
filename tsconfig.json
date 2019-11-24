@@ -15,8 +15,9 @@
     "outDir": "./lib",
     "lib": ["es2015", "dom"],
     "target": "es5",
+    "module": "commonjs",
     "moduleResolution": "node",
   },
-  "include": ["src/**/*", "examples/**/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }

@@ -1,7 +1,8 @@
 {
   "name": "fp-animation",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
   "author": "Max Willmott <max.willmott@skipthedishes.ca>",
   "license": "MIT",
   "dependencies": {
