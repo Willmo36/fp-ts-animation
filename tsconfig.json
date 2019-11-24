@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-
     "strict": true,
     "strictFunctionTypes": true,
     "strictNullChecks": true,
@@ -13,11 +12,10 @@
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationDir": "./es6",
-    "outDir": "./es6",
+    "outDir": "./lib",
     "lib": ["es2015", "dom"],
-    "target": "es6",
-    "moduleResolution": "node"
+    "target": "es5",
+    "moduleResolution": "node",
   },
   "include": ["src/**/*", "examples/**/*"],
   "exclude": ["node_modules"]
