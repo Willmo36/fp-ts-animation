@@ -1,11 +1,11 @@
 import { pipe } from "fp-ts/lib/pipeable";
 import { Semigroup } from "fp-ts/lib/Semigroup";
 import * as Record from "fp-ts/lib/Record";
-import { duration, Progress } from "../../src/Animation";
-import { getSemiringAnimation, map } from "../../src/index";
+import { Animation, duration, Progress } from "../../src/Animation";
+import { getSemiringAnimation, map, getMonoidAnimation } from "../../src/index";
 import { run } from "../../src/run";
 import { rafScheduler } from "../../src/scheduler";
-import { repeat, reversable } from "../../src/combinators";
+import { repeat, reversable, log, backwards } from "../../src/combinators";
 
 function main() {
   const elem = document.getElementById("circle")!;
@@ -15,15 +15,29 @@ function main() {
     map(opacity)
   );
 
+  const borderRadiusAnimation = pipe(
+    duration(2000),
+    map(p => ({...p, percentage: p.percentage * 0.5})),
+    map(borderRadius)
+  );
+
   const scaleAnimation = pipe(
-    duration(5000),
-    map(repeat(4)),
+    duration(2000),
+    map(repeat(2)),
     map(reversable),
+    map(backwards),
     map(scale)
   );
 
+  const all: Animation<Styles>[] = [
+    scaleAnimation,
+    opacityAnimation,
+    borderRadiusAnimation
+  ];
+
+
   const animation = pipe(
-    semiringStyleAnimation.add(scaleAnimation, opacityAnimation),
+    all.reduce(semiring.add, monoid.empty),
     map(render(elem))
   );
 
@@ -38,7 +52,8 @@ type Styles = Record<string, string | number>;
 export const semigroupStyles: Semigroup<Styles> = {
   concat: (x, y) => ({ ...x, ...y })
 };
-const semiringStyleAnimation = getSemiringAnimation(semigroupStyles);
+const semiring = getSemiringAnimation(semigroupStyles);
+const monoid = getMonoidAnimation(semigroupStyles);
 
 /**
  * jQuery combinators
@@ -46,6 +61,10 @@ const semiringStyleAnimation = getSemiringAnimation(semigroupStyles);
 
 export const opacity = (prog: Progress): Styles => ({
   opacity: prog.percentage
+});
+
+export const borderRadius = (prog: Progress): Styles => ({
+  "border-radius": (prog.percentage * 100) + "%"
 });
 
 export const scale = (prog: Progress): Styles => ({

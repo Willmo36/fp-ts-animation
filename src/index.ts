@@ -31,6 +31,7 @@ https://docs.google.com/spreadsheets/d/1PwZPOd5Bm4HbBhETj-56S3CEIRJJjHO7naMTRX7K
 import * as A from "./Animation";
 import { Semigroup } from "fp-ts/lib/Semigroup";
 import { Functor1 } from "fp-ts/lib/Functor";
+import { Monoid } from "fp-ts/lib/Monoid";
 
 type Animation<A> = A.Animation<A>;
 
@@ -151,5 +152,10 @@ export const functorAnimation: Functor1<A.URI> = {
       )
     )
 };
+
+export const getMonoidAnimation = <A>(semigroupA: Semigroup<A>): Monoid<A.Animation<A>> => ({
+  empty: A.trivial,
+  concat: getAdd(semigroupA),
+});
 
 export const { map } = pipeable(functorAnimation);
