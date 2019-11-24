@@ -1,104 +1,63 @@
-import $ from "jquery";
 import { pipe } from "fp-ts/lib/pipeable";
-import { Progress, duration } from "../../src/Animation";
-import { map, getSemiringAnimation } from "../../src/index";
 import { Semigroup } from "fp-ts/lib/Semigroup";
-import { linearDriver } from "../../src/driver";
+import * as Record from "fp-ts/lib/Record";
+import $ from "jquery";
+import { duration, Progress } from "../../src/Animation";
+import { getSemiringAnimation, map } from "../../src/index";
+import { run } from "../../src/run";
+import { rafScheduler } from "../../src/scheduler";
+import { repeat, reversable } from "../../src/combinators";
 
 function main() {
   const elem = document.getElementById("circle")!;
 
   const opacityAnimation = pipe(
     duration(5000),
-    map(opacityProgress)
+    map(opacity)
   );
 
   const scaleAnimation = pipe(
-    duration(10000),
+    duration(5000),
     map(repeat(4)),
     map(reversable),
-    map(scaleProgress)
+    map(scale)
   );
 
-
-  const foo = pipe(
-    scaleAnimation,
+  const animation = pipe(
+    semiringStyleAnimation.add(scaleAnimation, opacityAnimation),
     map(render(elem))
   );
 
-  linearDriver(foo, 100);
-  // immediateDriver(foo, 1000);
+  run(rafScheduler)(animation);
 }
-
-
 
 /**
  * Style types
  */
 
-type Styles = Partial<{
-  opacity: number;
-  transform: string;
-}>;
-
+type Styles = Record<string, string | number>;
 export const semigroupStyles: Semigroup<Styles> = {
   concat: (x, y) => ({ ...x, ...y })
 };
-
 const semiringStyleAnimation = getSemiringAnimation(semigroupStyles);
 
-
-
-
-
-
-
 /**
- * TRANSFORMS
+ * jQuery combinators
  */
 
-export const opacityProgress = (prog: Progress): Styles => ({
+export const opacity = (prog: Progress): Styles => ({
   opacity: prog.percentage
 });
 
-export const scaleProgress = (prog: Progress): Styles => ({
+export const scale = (prog: Progress): Styles => ({
   transform: `scale(${prog.percentage},${prog.percentage})`
 });
 
-//0 - 100 - 0
-const reversable = (prog: Progress): Progress => {
-  const p = prog.percentage * 2;
-  const p2 = p > 1 ? 2 - p : p;
-  return { ...prog, percentage: p2 };
-};
-
-const repeat = (times: number) => (prog: Progress): Progress => {
-  const p = (prog.percentage * times) % 1;
-  return { ...prog, percentage: p };
-};
-
-
-
-
-
-
-
-
-
-
-/**
- * jQuery render
- */
-export const render = (elem: HTMLElement) => (
-  styles: Styles
-) => {
-  const record = styles as Record<string, string | number>
+export const render = (elem: HTMLElement) => (styles: Styles) => {
+  const record = styles as Record<string, string | number>;
   Object.keys(record).map(key => {
     $(elem).css(key, record[key]);
   });
 };
-
-
-
 
 main();
