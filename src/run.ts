@@ -6,11 +6,11 @@ export const run = (schedule: Scheduler) => <A>(animation: Animation<A>) =>
   pipe(
     animation,
     fold(
-      (duration, tickFn) => {
+      (duration, sink) => {
         schedule(step => {
           if (step > duration) return false;
           const percentage = step / duration;
-          tickFn({ value: step, final: duration, percentage });
+          sink({ value: step, final: duration, percentage });
           return false;
         });
       },
